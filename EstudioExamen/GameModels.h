@@ -18,6 +18,8 @@ public:
 	GameModels();
 	~GameModels();
 	void CreateTriangleModel(const std::string& gameModelName);
+	void CreateSquareModel(const std::string& gameModelName);
+	void CreateSquareTxtModel(const std::string& gameModelName);
 	void DeleteModel(const std::string& gameModelName);
 	unsigned int GetModel(const std::string& gameModelName);
 private:

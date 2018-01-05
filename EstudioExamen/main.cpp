@@ -8,7 +8,7 @@
 #include "Dependencies\SOIL\SOIL2.h"
 
 ////////GLOBALS////////
-GLuint WIDTH = 1280;
+GLuint WIDTH = 720;
 GLuint HEIGHT = 720;
 const char* HEADER_INF = "PAT ENGINE V2";
 GameModels* gameModels;
@@ -23,11 +23,39 @@ static void error_callback(int error, const char* description)
 
 void RenderScene(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(1.0, 0.0, 0.0, 1.0);
+	//glClearColor(1.0, 0.0, 0.0, 1.0);
 
-	glBindVertexArray(gameModels->GetModel("triangle1"));
+	glBindVertexArray(gameModels->GetModel("quad1"));
+
+	//LoadTx
+	GLuint texture;
+	int TxW, TxH;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	unsigned char *image = SOIL_load_image("T1.JPG", &TxW, &TxH,0, SOIL_LOAD_RGBA );
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TxW, TxH, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	SOIL_free_image_data(image);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glActiveTexture(GL_TEXTURE0);
+	
+	
+	
+
+
 	glUseProgram(program);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glUniform1i(glGetUniformLocation(program, "Tx0"),0);
+	//Tri:
+	//glDrawArrays(GL_TRIANGLES, 0, 3);
+	//Quad:
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	//glfwSwapBuffers(window);
 }
@@ -56,6 +84,10 @@ void Init() {
 	glfwSwapInterval(1); /*vsync*/
 	glewExperimental = GL_TRUE;
 	glewInit();
+	//glViewport
+	glViewport(0, 0, WIDTH, HEIGHT);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	const GLubyte* renderer = glGetString(GL_RENDERER);
 	const GLubyte* version = glGetString(GL_RENDERER);
@@ -74,7 +106,8 @@ void Init() {
 	glEnable(GL_DEPTH_TEST);
 
 	gameModels = new GameModels();
-	gameModels->CreateTriangleModel("triangle1");
+	//gameModels->CreateTriangleModel("triangle1");
+	gameModels->CreateSquareModel("quad1");
 
 	glDepthFunc(GL_LESS);
 	ShaderLoader shaderLoader;
@@ -84,6 +117,7 @@ void Init() {
 
 int main() {
 	Init();
+	
 	while (!glfwWindowShouldClose(window)) {
 		RenderScene();
 		glfwPollEvents();
